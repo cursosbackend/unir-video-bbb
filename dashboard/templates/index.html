@@ -190,6 +190,139 @@
         }
 
         /* ============================================
+           Sort Bar (glassmorphism)
+           ============================================ */
+        .sort-bar-glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 0.65rem 1rem;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .sort-label {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-right: 0.25rem;
+            white-space: nowrap;
+        }
+
+        .sort-select {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            color: #fff;
+            padding: 0.4rem 2rem 0.4rem 0.75rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Cpath fill='rgba(255,255,255,0.4)' d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.6rem center;
+            background-size: 12px;
+            min-width: 110px;
+        }
+
+        .sort-select:focus {
+            background-color: rgba(108, 99, 255, 0.06);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.15);
+            outline: none;
+        }
+
+        .sort-select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        .sort-order-group {
+            display: flex;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+            padding: 3px;
+        }
+
+        .btn-sort-order {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.35);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-sort-order:hover {
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .btn-sort-order.active {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(108, 99, 255, 0.3);
+        }
+
+        .btn-sort-order.active:hover {
+            background: var(--accent-hover);
+        }
+
+        .sort-badge {
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.45);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        .sort-badge span {
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        @media (max-width: 575.98px) {
+            .sort-bar-glass {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+                padding: 0.75rem;
+            }
+            .sort-bar-group {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .sort-select {
+                flex: 1;
+                min-width: 0;
+            }
+            .sort-order-group {
+                align-self: center;
+            }
+            .sort-badge {
+                margin-left: 0;
+                align-self: center;
+            }
+        }
+
+        /* ============================================
            Botón Nueva Clase (gradiente)
            ============================================ */
         .btn-gradient {
@@ -484,6 +617,19 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 16px rgba(255, 107, 107, 0.2);
             color: var(--error);
+        }
+
+        .btn-action-play {
+            background: rgba(108, 99, 255, 0.12);
+            color: var(--accent);
+            border-color: rgba(108, 99, 255, 0.2);
+        }
+
+        .btn-action-play:hover {
+            background: rgba(108, 99, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(108, 99, 255, 0.3);
+            color: var(--accent);
         }
 
         .btn-action-spinner {
@@ -965,9 +1111,34 @@
         </header>
 
         <!-- ==========================================
+             Sort Bar
+             ========================================== -->
+        <div class="sort-bar-glass mt-3" id="sortBar">
+            <div class="sort-bar-group d-flex align-items-center gap-2">
+                <label class="sort-label" for="sortFieldSelect">Ordenar por</label>
+                <select class="sort-select" id="sortFieldSelect">
+                    <option value="date">Fecha</option>
+                    <option value="name">Nombre</option>
+                </select>
+            </div>
+            <div class="sort-order-group">
+                <button class="btn-sort-order" data-order="asc" title="Ascendente (A-Z / más antiguo)">
+                    <i class="bi bi-sort-alpha-down"></i>
+                </button>
+                <button class="btn-sort-order active" data-order="desc" title="Descendente (Z-A / más reciente)">
+                    <i class="bi bi-sort-alpha-down-alt"></i>
+                </button>
+            </div>
+            <div class="sort-badge" id="sortClassBadge">
+                <i class="bi bi-collection me-1"></i>
+                <span id="sortClassCount">0</span> clases
+            </div>
+        </div>
+
+        <!-- ==========================================
              Cards Grid
              ========================================== -->
-        <div class="cards-grid mt-4" id="classesContainer">
+        <div class="cards-grid mt-3" id="classesContainer">
             <!-- Skeleton will be shown here initially, replaced by JS -->
         </div>
     </div>
@@ -1076,6 +1247,34 @@
     </div>
 
     <!-- ==========================================
+         Modal: Reproductor de Video
+         ========================================== -->
+    <div class="modal fade modal-glass" id="playVideoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-play-circle-fill me-2" style="color:var(--accent);"></i>
+                        <span id="playVideoTitle">Reproducir</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body p-0" style="background:#000;border-radius:0 0 20px 20px;overflow:hidden;">
+                    <video id="playVideoPlayer" controls autoplay style="width:100%;display:block;max-height:70vh;">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                <div class="modal-footer">
+                    <a id="playVideoDownload" class="btn btn-gradient px-4" download>
+                        <i class="bi bi-download me-1"></i>Descargar video
+                    </a>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
          Toast Container
          ========================================== -->
     <div class="toast-container-modern" id="toastContainer"></div>
@@ -1091,6 +1290,26 @@
         let pollingInterval = null;
         let deleteTargetId = null;
         let initialLoadDone = false;
+        let sortField = 'date';
+        let sortOrder = 'desc';
+
+        // ============================================
+        // Sort Classes
+        // ============================================
+        function sortClasses(classes) {
+            return [...classes].sort((a, b) => {
+                let cmp = 0;
+                if (sortField === 'name') {
+                    cmp = (a.name || '').localeCompare(b.name || '');
+                } else {
+                    // date
+                    const dateA = new Date(a.created_at || 0);
+                    const dateB = new Date(b.created_at || 0);
+                    cmp = dateA - dateB;
+                }
+                return sortOrder === 'asc' ? cmp : -cmp;
+            });
+        }
 
         // ============================================
         // Relative Time Formatter
@@ -1160,6 +1379,10 @@
                 const resp = await fetch('/api/classes');
                 const classes = await resp.json();
                 initialLoadDone = true;
+                const sortedClasses = sortClasses(classes);
+
+                // Update sort badge count
+                document.getElementById('sortClassCount').textContent = sortedClasses.length;
 
                 // Count active classes
                 const activeClasses = classes.filter(c =>
@@ -1169,7 +1392,7 @@
                 );
                 updateActiveCount(activeClasses.length);
 
-                if (classes.length === 0) {
+                if (sortedClasses.length === 0) {
                     container.innerHTML = `
                         <div class="empty-state-modern">
                             <i class="bi bi-inbox empty-icon"></i>
@@ -1183,7 +1406,7 @@
 
                 // Render cards
                 let hasActive = false;
-                container.innerHTML = classes.map((c, index) => {
+                container.innerHTML = sortedClasses.map((c, index) => {
                     if (c.status === 'pending' || c.status === 'processing' ||
                         c.status?.startsWith('Descargando') || c.status?.startsWith('Fusionando') ||
                         c.status?.startsWith('Concatenando')) {
@@ -1336,6 +1559,9 @@
         function getActions(c) {
             if (c.status === 'completed' && c.output_filename) {
                 return `
+                    <button class="btn-action btn-action-play" onclick="playVideo('${c.id}', '${escapeHtml(c.output_filename)}')" title="Reproducir video">
+                        <i class="bi bi-play-fill"></i>
+                    </button>
                     <a href="/api/download/${c.id}" class="btn-download-text">
                         <i class="bi bi-download"></i> Descargar
                     </a>
@@ -1567,8 +1793,48 @@
         }
 
         // ============================================
+        // Video Player
+        // ============================================
+        function playVideo(id, name) {
+            const url = `/api/download/${id}`;
+            document.getElementById('playVideoTitle').textContent = name || 'Reproducir video';
+            document.getElementById('playVideoPlayer').src = url;
+            document.getElementById('playVideoDownload').href = url;
+            const modal = new bootstrap.Modal(document.getElementById('playVideoModal'));
+            modal.show();
+        }
+
+        // Stop video when modal is closed
+        document.getElementById('playVideoModal').addEventListener('hidden.bs.modal', function() {
+            const player = document.getElementById('playVideoPlayer');
+            player.pause();
+            player.removeAttribute('src');
+            player.load();
+        });
+
+        // ============================================
         // Init
         // ============================================
+        // Sync sort state with UI
+        document.getElementById('sortFieldSelect').value = sortField;
+
+        // Sort field change
+        document.getElementById('sortFieldSelect').addEventListener('change', function() {
+            sortField = this.value;
+            loadClasses();
+        });
+
+        // Sort order toggle
+        document.querySelectorAll('.btn-sort-order').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.classList.contains('active')) return;
+                document.querySelectorAll('.btn-sort-order').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                sortOrder = this.dataset.order;
+                loadClasses();
+            });
+        });
+
         // Backdrop for modals
         document.querySelectorAll('.modal-glass').forEach(m => {
             m.addEventListener('show.bs.modal', function() {
