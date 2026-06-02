@@ -66,12 +66,29 @@ async def download_file(client: httpx.AsyncClient, url: str, dest: Path) -> None
     async with client.stream("GET", url, follow_redirects=True) as resp:
         resp.raise_for_status()
         total = int(resp.headers.get("content-length", 0))
+
+        # Verificar content-type antes de descargar
+        ct = resp.headers.get("content-type", "")
+        if "text/html" in ct:
+            raise RuntimeError(f"URL returned HTML instead of video (content-type: {ct})")
+
         downloaded = 0
         with open(dest, "wb") as f:
             async for chunk in resp.aiter_bytes(chunk_size=65536):
                 f.write(chunk)
                 downloaded += len(chunk)
         logger.info(f"Downloaded {dest} ({downloaded}/{total} bytes)")
+
+        # Post-download validation: check file size
+        if dest.stat().st_size < 100:
+            raise RuntimeError(f"Downloaded file too small ({dest.stat().st_size} bytes), likely invalid")
+
+        # Check for HTML signature
+        with open(dest, "rb") as f:
+            header = f.read(100)
+            if b"<!doctype html" in header.lower() or b"<html" in header.lower():
+                dest.unlink()  # delete the bad file
+                raise RuntimeError(f"Downloaded file is HTML, not a video")
 
 
 async def run_ffmpeg(args: list[str], cwd: Optional[Path] = None) -> tuple[int, str, str]:
@@ -100,9 +117,10 @@ def update_progress(class_id: str, status: str, progress: int, error: Optional[s
 
 def get_raw_url_patterns(server: str, recording_id: str) -> list[dict[str, str]]:
     bases = [
+        f"https://{server}/presentation/{recording_id}/video",
         f"https://{server}/presentation/{recording_id}",
-        f"https://{server}/playback/presentation/2.0/{recording_id}",
         f"https://{server}/playback/presentation/2.3/{recording_id}",
+        f"https://{server}/playback/presentation/2.0/{recording_id}",
         f"https://{server}/playback/presentation/{recording_id}",
     ]
     return [
@@ -141,22 +159,37 @@ async def process_class(class_id: str):
             merged_path = session_dir / "merged.webm"
 
             async with httpx.AsyncClient(timeout=httpx.Timeout(300.0)) as client:
-                for key, dest in [("deskshare", deskshare_path), ("webcams", webcams_path)]:
-                    downloaded = False
-                    last_error = None
-                    for pattern in url_patterns:
-                        file_url = pattern[key]
-                        try:
-                            await download_file(client, file_url, dest)
-                            downloaded = True
-                            break
-                        except Exception as e:
-                            last_error = e
-                            logger.warning(f"Fallo {file_url}: {e}")
-                    if not downloaded:
-                        raise RuntimeError(f"Error descargando {key} de {sess_label}: {last_error}")
+                # Descargar deskshare (opcional)
+                deskshare_ok = False
+                for pattern in url_patterns:
+                    try:
+                        await download_file(client, pattern["deskshare"], deskshare_path)
+                        deskshare_ok = True
+                        break
+                    except Exception as e:
+                        logger.warning(f"Fallo deskshare {pattern['deskshare']}: {e}")
+
+                # Descargar webcams (obligatorio)
+                webcams_ok = False
+                for pattern in url_patterns:
+                    try:
+                        await download_file(client, pattern["webcams"], webcams_path)
+                        webcams_ok = True
+                        break
+                    except Exception as e:
+                        logger.warning(f"Fallo webcams {pattern['webcams']}: {e}")
+
+                if not webcams_ok:
+                    raise RuntimeError(f"No se pudo descargar webcams.webm para {sess_label}")
 
             update_progress(class_id, f"Fusionando {sess_label}...", 40 + int((idx / len(sessions)) * 30))
+
+            # Si deskshare no está disponible, usar solo webcams
+            if not deskshare_ok:
+                logger.info(f"No hay deskshare para {sess_label}, usando solo webcams")
+                shutil.copy2(webcams_path, merged_path)
+                merged_files.append(merged_path)
+                continue  # saltar merge, ir a la siguiente sesión
 
             if not deskshare_path.exists() or not webcams_path.exists():
                 raise RuntimeError(f"Archivos no encontrados para {sess_label}")
