@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Unir Clases BBB</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-5.3.0.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background: #0f0f1a; }
+        .card { background: #1a1a2e; border: 1px solid #2a2a4a; }
+        .table { color: #e0e0e0; }
+        .table > :not(caption) > * > * { background: transparent; border-color: #2a2a4a; }
+        .badge-status { font-size: 0.8rem; padding: 0.35em 0.65em; }
+        .progress-thin { height: 6px; }
+        .header-icon { font-size: 1.8rem; color: #6c63ff; }
+        .btn-accent { background: #6c63ff; border-color: #6c63ff; }
+        .btn-accent:hover { background: #5a52e0; border-color: #5a52e0; }
+        .btn-outline-accent { border-color: #6c63ff; color: #6c63ff; }
+        .btn-outline-accent:hover { background: #6c63ff; color: #fff; }
+        .toast-container { z-index: 1100; }
+        .empty-state { text-align: center; padding: 4rem 2rem; color: #6c757d; }
+        .empty-state i { font-size: 4rem; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <header class="d-flex align-items-center gap-3 mb-4">
+            <i class="bi bi-camera-video header-icon"></i>
+            <div>
+                <h1 class="h3 mb-0">Unir Clases BBB</h1>
+                <p class="text-muted mb-0 small">Dashboard para descargar y fusionar grabaciones de BigBlueButton</p>
+            </div>
+            <button class="btn btn-accent ms-auto" data-bs-toggle="modal" data-bs-target="#addClassModal">
+                <i class="bi bi-plus-lg me-1"></i>Nueva Clase
+            </button>
+        </header>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="classesTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Clase</th>
+                                <th>Sesiones</th>
+                                <th>Estado</th>
+                                <th>Progreso</th>
+                                <th>Creada</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="classesBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="empty-state" id="emptyState">
+                    <i class="bi bi-inbox"></i>
+                    <h5>No hay clases</h5>
+                    <p class="mb-0">Agrega una clase para comenzar a procesar las grabaciones</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addClassModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="background:#1a1a2e;">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Nueva Clase</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addClassForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre de la clase <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="className" placeholder="Ej: Clase 1 - Álgebra" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">URL Sesión 1 <span class="text-danger">*</span></label>
+                            <input type="url" class="form-control" id="url1" placeholder="https://.../playback/presentation/2.3/..." required>
+                            <div class="form-text">URL de reproducción de BBB (primera parte de la clase)</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">URL Sesión 2 <span class="text-muted">(opcional)</span></label>
+                            <input type="url" class="form-control" id="url2" placeholder="https://.../playback/presentation/2.3/...">
+                            <div class="form-text">Si la clase tiene segunda parte, pega la URL aquí</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-accent" id="submitBtn">
+                            <span id="submitText">Agregar y Procesar</span>
+                            <span id="submitSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let pollingInterval = null;
+
+        document.getElementById('addClassForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const text = document.getElementById('submitText');
+            const spinner = document.getElementById('submitSpinner');
+            btn.disabled = true;
+            text.textContent = 'Agregando...';
+            spinner.classList.remove('d-none');
+
+            try {
+                const resp = await fetch('/api/classes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: document.getElementById('className').value,
+                        url1: document.getElementById('url1').value,
+                        url2: document.getElementById('url2').value || null,
+                    }),
+                });
+                if (!resp.ok) {
+                    const err = await resp.json();
+                    showToast('Error', err.detail || 'Error al crear la clase', 'danger');
+                    return;
+                }
+                document.getElementById('addClassForm').reset();
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addClassModal'));
+                modal.hide();
+                await loadClasses();
+                showToast('Éxito', 'Clase agregada. El procesamiento comenzará en breve.', 'success');
+            } catch (err) {
+                showToast('Error', err.message, 'danger');
+            } finally {
+                btn.disabled = false;
+                text.textContent = 'Agregar y Procesar';
+                spinner.classList.add('d-none');
+            }
+        });
+
+        async function loadClasses() {
+            try {
+                const resp = await fetch('/api/classes');
+                const classes = await resp.json();
+                const tbody = document.getElementById('classesBody');
+                const empty = document.getElementById('emptyState');
+
+                if (classes.length === 0) {
+                    tbody.innerHTML = '';
+                    empty.style.display = '';
+                    stopPolling();
+                    return;
+                }
+
+                empty.style.display = 'none';
+                let hasActive = false;
+                tbody.innerHTML = classes.map(c => {
+                    if (c.status === 'pending' || c.status === 'processing' ||
+                        c.status?.startsWith('Descargando') || c.status?.startsWith('Fusionando') ||
+                        c.status?.startsWith('Concatenando')) {
+                        hasActive = true;
+                    }
+                    return renderClassRow(c);
+                }).join('');
+
+                if (hasActive) {
+                    startPolling();
+                } else {
+                    stopPolling();
+                }
+            } catch (err) {
+                console.error('Error loading classes:', err);
+            }
+        }
+
+        function renderClassRow(c) {
+            const statusBadge = getStatusBadge(c.status, c.error);
+            const progressBar = getProgressBar(c.progress, c.status);
+            const actions = getActions(c);
+            const created = new Date(c.created_at).toLocaleString('es-CL', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+
+            const sesiones = c.url2 ? '2 sesiones' : '1 sesión';
+
+            return `<tr>
+                <td><strong>${escapeHtml(c.name)}</strong></td>
+                <td><span class="badge bg-secondary">${sesiones}</span></td>
+                <td>${statusBadge}</td>
+                <td style="min-width:150px">${progressBar}</td>
+                <td class="small text-muted">${created}</td>
+                <td>${actions}</td>
+            </tr>`;
+        }
+
+        function getStatusBadge(status, error) {
+            if (error) return `<span class="badge bg-danger badge-status" title="${escapeHtml(error)}">Error</span>`;
+            switch (status) {
+                case 'completed': return `<span class="badge bg-success badge-status">Completado</span>`;
+                case 'pending': return `<span class="badge bg-secondary badge-status">Pendiente</span>`;
+                default:
+                    if (status?.startsWith('Descargando')) return `<span class="badge bg-info badge-status">${status}</span>`;
+                    if (status?.startsWith('Fusionando')) return `<span class="badge bg-warning text-dark badge-status">${status}</span>`;
+                    if (status?.startsWith('Concatenando')) return `<span class="badge bg-primary badge-status">${status}</span>`;
+                    return `<span class="badge bg-secondary badge-status">${status || 'Desconocido'}</span>`;
+            }
+        }
+
+        function getProgressBar(progress, status) {
+            const color = status === 'error' ? 'bg-danger' :
+                         status === 'completed' ? 'bg-success' :
+                         progress < 40 ? 'bg-info' :
+                         progress < 70 ? 'bg-warning' : 'bg-primary';
+            return `<div class="progress progress-thin">
+                <div class="progress-bar ${color}" role="progressbar"
+                     style="width:${progress}%"
+                     aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+            </div>
+            <small class="text-muted">${progress}%</small>`;
+        }
+
+        function getActions(c) {
+            if (c.status === 'completed' && c.output_filename) {
+                return `<div class="btn-group btn-group-sm">
+                    <a href="/api/download/${c.id}" class="btn btn-success">
+                        <i class="bi bi-download"></i>
+                    </a>
+                    <button class="btn btn-outline-danger" onclick="deleteClass('${c.id}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>`;
+            }
+            if (c.status === 'error') {
+                return `<button class="btn btn-outline-danger btn-sm" onclick="deleteClass('${c.id}')">
+                    <i class="bi bi-trash"></i>
+                </button>`;
+            }
+            return `<div class="spinner-border spinner-border-sm text-secondary" role="status"></div>`;
+        }
+
+        async function deleteClass(id) {
+            if (!confirm('¿Eliminar esta clase?')) return;
+            try {
+                await fetch(`/api/classes/${id}`, { method: 'DELETE' });
+                await loadClasses();
+            } catch (err) {
+                showToast('Error', err.message, 'danger');
+            }
+        }
+
+        function startPolling() {
+            if (pollingInterval) return;
+            pollingInterval = setInterval(loadClasses, 3000);
+        }
+
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+        }
+
+        function showToast(title, message, type = 'info') {
+            const container = document.querySelector('.toast-container');
+            const icons = { success: 'bi-check-circle-fill', danger: 'bi-x-circle-fill', info: 'bi-info-circle-fill', warning: 'bi-exclamation-triangle-fill' };
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-bg-${type} border-0`;
+            toast.role = 'alert';
+            toast.innerHTML = `<div class="d-flex">
+                <div class="toast-body"><i class="bi ${icons[type] || icons.info} me-2"></i><strong>${title}</strong><br><small>${message}</small></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>`;
+            container.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast, { autohide: true, delay: 5000 });
+            bsToast.show();
+            toast.addEventListener('hidden.bs.toast', () => toast.remove());
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        loadClasses();
+        setInterval(loadClasses, 10000);
+    </script>
+</body>
+</html>

@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# BBB Dashboard - output videos
+clases/
+
+# Test videos
+test video/

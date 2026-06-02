@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  dashboard:
+    build: .
+    container_name: bbb-dashboard
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./clases:/app/clases
+    restart: unless-stopped
