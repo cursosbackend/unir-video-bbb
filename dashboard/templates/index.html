@@ -4,94 +4,1047 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Unir Clases BBB</title>
-    <link href="https://cdn.replit.com/agent/bootstrap-5.3.0.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        body { background: #0f0f1a; }
-        .card { background: #1a1a2e; border: 1px solid #2a2a4a; }
-        .table { color: #e0e0e0; }
-        .table > :not(caption) > * > * { background: transparent; border-color: #2a2a4a; }
-        .badge-status { font-size: 0.8rem; padding: 0.35em 0.65em; }
-        .progress-thin { height: 6px; }
-        .header-icon { font-size: 1.8rem; color: #6c63ff; }
-        .btn-accent { background: #6c63ff; border-color: #6c63ff; }
-        .btn-accent:hover { background: #5a52e0; border-color: #5a52e0; }
-        .btn-outline-accent { border-color: #6c63ff; color: #6c63ff; }
-        .btn-outline-accent:hover { background: #6c63ff; color: #fff; }
-        .toast-container { z-index: 1100; }
-        .empty-state { text-align: center; padding: 4rem 2rem; color: #6c757d; }
-        .empty-state i { font-size: 4rem; margin-bottom: 1rem; }
+        /* ============================================
+           CSS Variables & Theme
+           ============================================ */
+        :root {
+            --bg-primary: #0a0a1a;
+            --bg-card: #1a1a2e;
+            --accent: #6c63ff;
+            --accent-hover: #5a52e0;
+            --success: #00d4aa;
+            --success-hover: #00b894;
+            --error: #ff6b6b;
+            --warning: #f0c040;
+            --info: #4fc3f7;
+            --glass-bg: rgba(26, 26, 46, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --glass-heavy: rgba(26, 26, 46, 0.95);
+            --radius-card: 16px;
+            --radius-input: 12px;
+            --radius-pill: 50px;
+            --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3);
+            --shadow-glow: 0 8px 40px rgba(108, 99, 255, 0.2);
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ============================================
+           Base
+           ============================================ */
+        body {
+            background: var(--bg-primary);
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background-image:
+                radial-gradient(ellipse at 10% 20%, rgba(108, 99, 255, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 80%, rgba(0, 212, 170, 0.04) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* ============================================
+           Scrollbar
+           ============================================ */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3a3a5a; }
+
+        /* ============================================
+           Animations
+           ============================================ */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0.5; }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 8px rgba(0, 212, 170, 0.3); }
+            50%      { box-shadow: 0 0 20px rgba(0, 212, 170, 0.6); }
+        }
+
+        @keyframes shimmer {
+            0%   { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(120%); opacity: 0; }
+            to   { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to   { transform: translateX(120%); opacity: 0; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        /* ============================================
+           Header (Glassmorphism)
+           ============================================ */
+        .header-glass {
+            background: linear-gradient(
+                135deg,
+                rgba(108, 99, 255, 0.18) 0%,
+                rgba(26, 26, 46, 0.92) 50%,
+                rgba(0, 212, 170, 0.08) 100%
+            );
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.1rem 1.5rem;
+            box-shadow: 0 4px 32px rgba(0, 0, 0, 0.25);
+            transition: var(--transition-smooth);
+        }
+
+        .header-logo-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--accent), #8b7aff);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #fff;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #c4bfff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .header-subtitle {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.5);
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .active-count-badge {
+            background: rgba(108, 99, 255, 0.2);
+            border: 1px solid rgba(108, 99, 255, 0.25);
+            border-radius: var(--radius-pill);
+            padding: 0.35rem 1rem;
+            font-size: 0.82rem;
+            color: #c4bfff;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: var(--transition-smooth);
+        }
+
+        .active-count-badge .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 1.5s ease infinite;
+        }
+
+        .active-count-badge .dot.inactive {
+            background: rgba(255, 255, 255, 0.2);
+            animation: none;
+        }
+
+        .active-count-badge .count {
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* ============================================
+           Botón Nueva Clase (gradiente)
+           ============================================ */
+        .btn-gradient {
+            background: linear-gradient(135deg, var(--accent), #8b7aff);
+            border: none;
+            border-radius: var(--radius-pill);
+            padding: 0.55rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: #fff;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 16px rgba(108, 99, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-gradient:hover::before {
+            left: 100%;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(108, 99, 255, 0.4);
+            color: #fff;
+        }
+
+        .btn-gradient:active {
+            transform: translateY(0);
+        }
+
+        /* ============================================
+           Cards Grid
+           ============================================ */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+        }
+
+        @media (min-width: 576px) {
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 992px) {
+            .cards-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* ============================================
+           Class Card
+           ============================================ */
+        .class-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-card);
+            padding: 1.4rem;
+            box-shadow: var(--shadow-card);
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        .class-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--success), var(--accent));
+            background-size: 200% 100%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .class-card:hover::before {
+            opacity: 1;
+            animation: shimmer 2s linear infinite;
+        }
+
+        .class-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: var(--shadow-glow), 0 0 40px rgba(108, 99, 255, 0.08);
+            border-color: rgba(108, 99, 255, 0.2);
+        }
+
+        .class-card .card-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .class-card .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .class-card .card-time {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .class-card .card-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: auto;
+            padding-top: 0.5rem;
+        }
+
+        /* ============================================
+           Badges
+           ============================================ */
+        .badge-sessions {
+            background: rgba(108, 99, 255, 0.15);
+            color: #b8b0ff;
+            border: 1px solid rgba(108, 99, 255, 0.2);
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.25em 0.75em;
+            border-radius: var(--radius-pill);
+        }
+
+        .badge-status-modern {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.25em 0.85em;
+            border-radius: var(--radius-pill);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: var(--transition-smooth);
+        }
+
+        .badge-status-modern.completed {
+            background: rgba(0, 212, 170, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(0, 212, 170, 0.25);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        .badge-status-modern.error {
+            background: rgba(255, 107, 107, 0.15);
+            color: var(--error);
+            border: 1px solid rgba(255, 107, 107, 0.25);
+        }
+
+        .badge-status-modern.pending {
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .badge-status-modern.processing {
+            background: rgba(79, 195, 247, 0.15);
+            color: var(--info);
+            border: 1px solid rgba(79, 195, 247, 0.25);
+            animation: pulse 1.5s ease infinite;
+        }
+
+        .badge-status-modern.downloading {
+            background: rgba(79, 195, 247, 0.15);
+            color: var(--info);
+            border: 1px solid rgba(79, 195, 247, 0.25);
+            animation: pulse 1.5s ease infinite;
+        }
+
+        .badge-status-modern.fusionando {
+            background: rgba(240, 192, 64, 0.15);
+            color: var(--warning);
+            border: 1px solid rgba(240, 192, 64, 0.25);
+            animation: pulse 1.5s ease infinite;
+        }
+
+        .badge-status-modern.concatenando {
+            background: rgba(108, 99, 255, 0.15);
+            color: #b8b0ff;
+            border: 1px solid rgba(108, 99, 255, 0.25);
+            animation: pulse 1.5s ease infinite;
+        }
+
+        /* ============================================
+           Progress Bar (animated gradient)
+           ============================================ */
+        .progress-modern {
+            height: 8px;
+            border-radius: var(--radius-pill);
+            background: rgba(255, 255, 255, 0.06);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-modern .progress-bar-gradient {
+            height: 100%;
+            border-radius: var(--radius-pill);
+            background: linear-gradient(90deg, var(--accent), #8b7aff, var(--success));
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .progress-modern .progress-bar-gradient.completed {
+            background: linear-gradient(90deg, var(--success), #00e6b8);
+            animation: none;
+        }
+
+        .progress-modern .progress-bar-gradient.error {
+            background: var(--error);
+            animation: none;
+        }
+
+        .progress-modern .progress-bar-gradient.static {
+            animation: none;
+        }
+
+        .progress-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.4);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* ============================================
+           Action Buttons
+           ============================================ */
+        .btn-action {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid transparent;
+            transition: var(--transition-smooth);
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .btn-action-download {
+            background: rgba(0, 212, 170, 0.12);
+            color: var(--success);
+            border-color: rgba(0, 212, 170, 0.2);
+        }
+
+        .btn-action-download:hover {
+            background: rgba(0, 212, 170, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 212, 170, 0.25);
+            color: var(--success);
+        }
+
+        .btn-action-delete {
+            background: rgba(255, 107, 107, 0.1);
+            color: var(--error);
+            border-color: rgba(255, 107, 107, 0.15);
+        }
+
+        .btn-action-delete:hover {
+            background: rgba(255, 107, 107, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(255, 107, 107, 0.2);
+            color: var(--error);
+        }
+
+        .btn-action-spinner {
+            width: 38px;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-action-spinner .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top-color: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* Download text button */
+        .btn-download-text {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.12), rgba(0, 212, 170, 0.06));
+            color: var(--success);
+            border: 1px solid rgba(0, 212, 170, 0.2);
+            border-radius: 10px;
+            padding: 0.45rem 1rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition-smooth);
+            text-decoration: none;
+        }
+
+        .btn-download-text:hover {
+            background: rgba(0, 212, 170, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 212, 170, 0.2);
+            color: var(--success);
+        }
+
+        /* ============================================
+           Skeleton Loading
+           ============================================ */
+        .skeleton-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-card);
+            padding: 1.4rem;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg,
+                rgba(255, 255, 255, 0.04) 25%,
+                rgba(255, 255, 255, 0.08) 50%,
+                rgba(255, 255, 255, 0.04) 75%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease infinite;
+            border-radius: 8px;
+        }
+
+        .skeleton-title {
+            height: 22px;
+            width: 80%;
+        }
+
+        .skeleton-meta {
+            height: 18px;
+            width: 50%;
+        }
+
+        .skeleton-progress {
+            height: 8px;
+            border-radius: var(--radius-pill);
+            width: 100%;
+        }
+
+        .skeleton-actions {
+            height: 38px;
+            width: 40%;
+        }
+
+        /* ============================================
+           Empty State
+           ============================================ */
+        .empty-state-modern {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: rgba(255, 255, 255, 0.3);
+            grid-column: 1 / -1;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .empty-state-modern .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+            display: block;
+        }
+
+        .empty-state-modern h5 {
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 600;
+        }
+
+        .empty-state-modern p {
+            color: rgba(255, 255, 255, 0.25);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* ============================================
+           Modal (glassmorphism)
+           ============================================ */
+        .modal-glass .modal-content {
+            background: var(--glass-heavy);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-glass .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 1.25rem 1.5rem;
+        }
+
+        .modal-glass .modal-header .modal-title {
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: #fff;
+        }
+
+        .modal-glass .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-glass .modal-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 1rem 1.5rem;
+        }
+
+        .modal-glass .btn-close {
+            filter: invert(0.8);
+        }
+
+        /* ============================================
+           Floating Labels (modern)
+           ============================================ */
+        .form-floating-modern {
+            position: relative;
+            margin-bottom: 1.25rem;
+        }
+
+        .form-floating-modern .form-control,
+        .form-floating-modern .form-select {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-input);
+            color: #fff;
+            padding: 1rem 1rem 0.5rem;
+            height: auto;
+            font-size: 0.92rem;
+            transition: var(--transition-smooth);
+            box-shadow: none;
+        }
+
+        .form-floating-modern .form-control:focus,
+        .form-floating-modern .form-select:focus {
+            background: rgba(108, 99, 255, 0.06);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.15);
+        }
+
+        .form-floating-modern .form-control.is-valid {
+            border-color: var(--success);
+            box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.12);
+        }
+
+        .form-floating-modern .form-control.is-invalid {
+            border-color: var(--error);
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.12);
+        }
+
+        .form-floating-modern label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 0.85rem 1rem;
+            pointer-events: none;
+            border: 1px solid transparent;
+            transform-origin: 0 0;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 0.92rem;
+        }
+
+        .form-floating-modern .form-control:focus ~ label,
+        .form-floating-modern .form-control:not(:placeholder-shown) ~ label,
+        .form-floating-modern .form-select:focus ~ label,
+        .form-floating-modern .form-select:not([value=""]):valid ~ label {
+            opacity: 0.65;
+            transform: scale(0.82) translateY(-0.45rem) translateX(0.1rem);
+        }
+
+        .form-floating-modern .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-floating-modern .form-text {
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 0.75rem;
+            margin-top: 0.3rem;
+            padding-left: 0.3rem;
+        }
+
+        .form-floating-modern .valid-feedback,
+        .form-floating-modern .invalid-feedback {
+            font-size: 0.75rem;
+            padding-left: 0.3rem;
+        }
+
+        /* ============================================
+           Modal Animation
+           ============================================ */
+        .modal.fade .modal-dialog {
+            transform: scale(0.92) translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            opacity: 0;
+        }
+
+        .modal.fade.show .modal-dialog {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        /* ============================================
+           Toast Notifications
+           ============================================ */
+        .toast-container-modern {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            pointer-events: none;
+        }
+
+        .toast-modern {
+            background: var(--glass-heavy);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 1rem 1.25rem;
+            min-width: 320px;
+            max-width: 420px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            pointer-events: all;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toast-modern.toast-hiding {
+            animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .toast-modern .toast-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .toast-modern .toast-icon.success {
+            background: rgba(0, 212, 170, 0.15);
+            color: var(--success);
+        }
+
+        .toast-modern .toast-icon.danger {
+            background: rgba(255, 107, 107, 0.15);
+            color: var(--error);
+        }
+
+        .toast-modern .toast-icon.info {
+            background: rgba(79, 195, 247, 0.15);
+            color: var(--info);
+        }
+
+        .toast-modern .toast-icon.warning {
+            background: rgba(240, 192, 64, 0.15);
+            color: var(--warning);
+        }
+
+        .toast-modern .toast-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .toast-modern .toast-body .toast-title {
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+
+        .toast-modern .toast-body .toast-message {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.55);
+            line-height: 1.3;
+        }
+
+        .toast-modern .toast-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 2px;
+            line-height: 1;
+            transition: var(--transition-smooth);
+            flex-shrink: 0;
+        }
+
+        .toast-modern .toast-close:hover {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .toast-modern .toast-timer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            border-radius: 0 0 0 14px;
+            background: var(--accent);
+            animation: toastTimer 4s linear forwards;
+        }
+
+        .toast-modern .toast-timer.success { background: var(--success); }
+        .toast-modern .toast-timer.danger  { background: var(--error); }
+        .toast-modern .toast-timer.info    { background: var(--info); }
+        .toast-modern .toast-timer.warning { background: var(--warning); }
+
+        @keyframes toastTimer {
+            from { width: 100%; }
+            to   { width: 0%; }
+        }
+
+        /* ============================================
+           Delete confirm modal
+           ============================================ */
+        .confirm-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(255, 107, 107, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--error);
+            margin: 0 auto 0.75rem;
+        }
+
+        /* ============================================
+           Responsive tweaks
+           ============================================ */
+        @media (max-width: 575.98px) {
+            .header-glass {
+                padding: 0.85rem 1rem;
+                border-radius: 16px;
+            }
+            .header-logo-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1.1rem;
+            }
+            .header-title {
+                font-size: 1.05rem;
+            }
+            .header-subtitle {
+                display: none;
+            }
+            .active-count-badge {
+                font-size: 0.72rem;
+                padding: 0.25rem 0.7rem;
+            }
+            .active-count-badge .label {
+                display: none;
+            }
+            .btn-gradient {
+                padding: 0.45rem 1rem;
+                font-size: 0.82rem;
+            }
+            .class-card {
+                padding: 1.1rem;
+            }
+            .toast-modern {
+                min-width: unset;
+                max-width: calc(100vw - 2rem);
+                margin: 0 0.5rem;
+            }
+            .toast-container-modern {
+                right: 0;
+                bottom: 0.75rem;
+                left: 0;
+                align-items: center;
+            }
+            .modal-glass .modal-body {
+                padding: 1.25rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .btn-gradient .btn-label {
+                display: none;
+            }
+        }
+
+        /* ============================================
+           Utility
+           ============================================ */
+        .gap-2xs { gap: 0.35rem; }
+        .text-gradient {
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .no-select { user-select: none; }
     </style>
 </head>
 <body>
-    <div class="container py-4">
-        <header class="d-flex align-items-center gap-3 mb-4">
-            <i class="bi bi-camera-video header-icon"></i>
-            <div>
-                <h1 class="h3 mb-0">Unir Clases BBB</h1>
-                <p class="text-muted mb-0 small">Dashboard para descargar y fusionar grabaciones de BigBlueButton</p>
+
+    <!-- ==========================================
+         Header
+         ========================================== -->
+    <div class="container py-3 py-md-4">
+        <header class="header-glass d-flex align-items-center gap-3">
+            <div class="header-logo-icon">
+                <i class="bi bi-camera-video-fill"></i>
             </div>
-            <button class="btn btn-accent ms-auto" data-bs-toggle="modal" data-bs-target="#addClassModal">
-                <i class="bi bi-plus-lg me-1"></i>Nueva Clase
+            <div class="min-width-0" style="flex:1;min-width:0;">
+                <div class="header-title">Unir Clases BBB</div>
+                <div class="header-subtitle">Descarga y fusión de grabaciones BigBlueButton</div>
+            </div>
+
+            <!-- Active classes counter -->
+            <div class="active-count-badge" id="activeCountBadge">
+                <span class="dot" id="activeDot"></span>
+                <span><span class="count" id="activeCount">0</span> <span class="label">activas</span></span>
+            </div>
+
+            <!-- Nueva Clase button -->
+            <button class="btn btn-gradient ms-1" data-bs-toggle="modal" data-bs-target="#addClassModal">
+                <i class="bi bi-plus-lg me-1"></i><span class="btn-label">Nueva Clase</span>
             </button>
         </header>
 
-        <div class="card">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0" id="classesTable">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Clase</th>
-                                <th>Sesiones</th>
-                                <th>Estado</th>
-                                <th>Progreso</th>
-                                <th>Creada</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="classesBody">
-                        </tbody>
-                    </table>
-                </div>
-                <div class="empty-state" id="emptyState">
-                    <i class="bi bi-inbox"></i>
-                    <h5>No hay clases</h5>
-                    <p class="mb-0">Agrega una clase para comenzar a procesar las grabaciones</p>
-                </div>
-            </div>
+        <!-- ==========================================
+             Cards Grid
+             ========================================== -->
+        <div class="cards-grid mt-4" id="classesContainer">
+            <!-- Skeleton will be shown here initially, replaced by JS -->
         </div>
     </div>
 
-    <div class="modal fade" id="addClassModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content" style="background:#1a1a2e;">
-                <div class="modal-header border-secondary">
-                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Nueva Clase</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <!-- ==========================================
+         Modal: Nueva Clase
+         ========================================== -->
+    <div class="modal fade modal-glass" id="addClassModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-plus-circle-fill me-2" style="color:var(--accent);"></i>
+                        Nueva Clase
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-                <form id="addClassForm">
+                <form id="addClassForm" novalidate>
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Nombre de la clase <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="className" placeholder="Ej: Clase 1 - Álgebra" required>
+                        <!-- Nombre -->
+                        <div class="form-floating-modern">
+                            <input type="text"
+                                   class="form-control"
+                                   id="className"
+                                   placeholder="Ej: Álgebra Lineal - Semana 10"
+                                   required
+                                   minlength="3"
+                                   autocomplete="off">
+                            <label for="className">Nombre de la clase <span class="text-danger">*</span></label>
+                            <div class="valid-feedback">¡Nombre válido!</div>
+                            <div class="invalid-feedback">El nombre debe tener al menos 3 caracteres</div>
+                            <div class="form-text">Ej: Álgebra Lineal - Semana 10</div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">URL Sesión 1 <span class="text-danger">*</span></label>
-                            <input type="url" class="form-control" id="url1" placeholder="https://.../playback/presentation/2.3/..." required>
-                            <div class="form-text">URL de reproducción de BBB (primera parte de la clase)</div>
+
+                        <!-- URL 1 -->
+                        <div class="form-floating-modern">
+                            <input type="url"
+                                   class="form-control"
+                                   id="url1"
+                                   placeholder="https://bbb.example.com/playback/presentation/2.3/..."
+                                   required
+                                   autocomplete="off">
+                            <label for="url1">URL Sesión 1 <span class="text-danger">*</span></label>
+                            <div class="valid-feedback">URL válida</div>
+                            <div class="invalid-feedback">Ingresa una URL válida de grabación BBB</div>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                URL de reproducción de BBB (primera parte de la clase)
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">URL Sesión 2 <span class="text-muted">(opcional)</span></label>
-                            <input type="url" class="form-control" id="url2" placeholder="https://.../playback/presentation/2.3/...">
-                            <div class="form-text">Si la clase tiene segunda parte, pega la URL aquí</div>
+
+                        <!-- URL 2 -->
+                        <div class="form-floating-modern">
+                            <input type="url"
+                                   class="form-control"
+                                   id="url2"
+                                   placeholder="https://bbb.example.com/playback/presentation/2.3/..."
+                                   autocomplete="off">
+                            <label for="url2">URL Sesión 2 <span class="text-muted">(opcional)</span></label>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Si la clase tiene segunda parte, pega la URL aquí
+                            </div>
                         </div>
                     </div>
-                    <div class="modal-footer border-secondary">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-accent" id="submitBtn">
-                            <span id="submitText">Agregar y Procesar</span>
-                            <span id="submitSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-gradient px-4" id="submitBtn">
+                            <span id="submitText">
+                                <i class="bi bi-cloud-arrow-down me-1"></i>Agregar y Procesar
+                            </span>
+                            <span id="submitSpinner" class="d-none">
+                                <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                Agregando...
+                            </span>
                         </button>
                     </div>
                 </form>
@@ -99,73 +1052,144 @@
         </div>
     </div>
 
-    <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+    <!-- ==========================================
+         Modal: Confirmar Eliminación
+         ========================================== -->
+    <div class="modal fade modal-glass" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <div class="confirm-icon">
+                        <i class="bi bi-trash3-fill"></i>
+                    </div>
+                    <h5 class="fw-bold mb-1">¿Eliminar clase?</h5>
+                    <p class="text-muted small mb-0">Esta acción no se puede deshacer. La clase y sus archivos serán eliminados permanentemente.</p>
+                </div>
+                <div class="modal-footer justify-content-center border-0 pt-0 pb-4">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger px-4" id="confirmDeleteBtn">
+                        <i class="bi bi-trash3 me-1"></i>Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- ==========================================
+         Toast Container
+         ========================================== -->
+    <div class="toast-container-modern" id="toastContainer"></div>
+
+    <!-- ==========================================
+         Scripts
+         ========================================== -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // ============================================
+        // State
+        // ============================================
         let pollingInterval = null;
+        let deleteTargetId = null;
+        let initialLoadDone = false;
 
-        document.getElementById('addClassForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const text = document.getElementById('submitText');
-            const spinner = document.getElementById('submitSpinner');
-            btn.disabled = true;
-            text.textContent = 'Agregando...';
-            spinner.classList.remove('d-none');
+        // ============================================
+        // Relative Time Formatter
+        // ============================================
+        function timeAgo(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffMs = now - date;
+            const diffSec = Math.floor(diffMs / 1000);
+            const diffMin = Math.floor(diffSec / 60);
+            const diffHour = Math.floor(diffMin / 60);
+            const diffDay = Math.floor(diffHour / 24);
+            const diffWeek = Math.floor(diffDay / 7);
+            const diffMonth = Math.floor(diffDay / 30);
 
-            try {
-                const resp = await fetch('/api/classes', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: document.getElementById('className').value,
-                        url1: document.getElementById('url1').value,
-                        url2: document.getElementById('url2').value || null,
-                    }),
-                });
-                if (!resp.ok) {
-                    const err = await resp.json();
-                    showToast('Error', err.detail || 'Error al crear la clase', 'danger');
-                    return;
-                }
-                document.getElementById('addClassForm').reset();
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addClassModal'));
-                modal.hide();
-                await loadClasses();
-                showToast('Éxito', 'Clase agregada. El procesamiento comenzará en breve.', 'success');
-            } catch (err) {
-                showToast('Error', err.message, 'danger');
-            } finally {
-                btn.disabled = false;
-                text.textContent = 'Agregar y Procesar';
-                spinner.classList.add('d-none');
+            if (diffSec < 5) return 'ahora';
+            if (diffSec < 60) return `hace ${diffSec} segundos`;
+            if (diffMin === 1) return 'hace 1 minuto';
+            if (diffMin < 60) return `hace ${diffMin} minutos`;
+            if (diffHour === 1) return 'hace 1 hora';
+            if (diffHour < 24) return `hace ${diffHour} horas`;
+            if (diffDay === 1) return 'hace 1 día';
+            if (diffDay < 7) return `hace ${diffDay} días`;
+            if (diffWeek === 1) return 'hace 1 semana';
+            if (diffWeek < 5) return `hace ${diffWeek} semanas`;
+            if (diffMonth === 1) return 'hace 1 mes';
+            if (diffMonth < 12) return `hace ${diffMonth} meses`;
+
+            // Fallback: formatted date
+            return date.toLocaleDateString('es-CL', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        // ============================================
+        // Skeleton Generator
+        // ============================================
+        function getSkeletons(count = 6) {
+            let html = '';
+            for (let i = 0; i < count; i++) {
+                html += `
+                    <div class="skeleton-card" style="animation-delay: ${i * 0.05}s">
+                        <div class="skeleton skeleton-title"></div>
+                        <div class="skeleton skeleton-meta"></div>
+                        <div class="skeleton skeleton-progress"></div>
+                        <div class="skeleton skeleton-actions"></div>
+                    </div>
+                `;
             }
-        });
+            return html;
+        }
 
+        // ============================================
+        // Load Classes
+        // ============================================
         async function loadClasses() {
+            const container = document.getElementById('classesContainer');
+            const empty = document.getElementById('emptyState');
+
+            // Show skeletons on initial load
+            if (!initialLoadDone) {
+                container.innerHTML = getSkeletons();
+            }
+
             try {
                 const resp = await fetch('/api/classes');
                 const classes = await resp.json();
-                const tbody = document.getElementById('classesBody');
-                const empty = document.getElementById('emptyState');
+                initialLoadDone = true;
+
+                // Count active classes
+                const activeClasses = classes.filter(c =>
+                    c.status === 'pending' || c.status === 'processing' ||
+                    c.status?.startsWith('Descargando') || c.status?.startsWith('Fusionando') ||
+                    c.status?.startsWith('Concatenando')
+                );
+                updateActiveCount(activeClasses.length);
 
                 if (classes.length === 0) {
-                    tbody.innerHTML = '';
-                    empty.style.display = '';
+                    container.innerHTML = `
+                        <div class="empty-state-modern">
+                            <i class="bi bi-inbox empty-icon"></i>
+                            <h5>No hay clases</h5>
+                            <p>Agrega una clase para comenzar a descargar y fusionar las grabaciones de BigBlueButton</p>
+                        </div>
+                    `;
                     stopPolling();
                     return;
                 }
 
-                empty.style.display = 'none';
+                // Render cards
                 let hasActive = false;
-                tbody.innerHTML = classes.map(c => {
+                container.innerHTML = classes.map((c, index) => {
                     if (c.status === 'pending' || c.status === 'processing' ||
                         c.status?.startsWith('Descargando') || c.status?.startsWith('Fusionando') ||
                         c.status?.startsWith('Concatenando')) {
                         hasActive = true;
                     }
-                    return renderClassRow(c);
+                    return renderClassCard(c, index);
                 }).join('');
 
                 if (hasActive) {
@@ -175,86 +1199,305 @@
                 }
             } catch (err) {
                 console.error('Error loading classes:', err);
+                if (!initialLoadDone) {
+                    container.innerHTML = `
+                        <div class="empty-state-modern">
+                            <i class="bi bi-exclamation-triangle empty-icon" style="color:var(--error);"></i>
+                            <h5 style="color:var(--error);">Error de conexión</h5>
+                            <p>No se pudieron cargar las clases. Verifica que el servidor esté funcionando.</p>
+                        </div>
+                    `;
+                } else {
+                    showToast('Error', 'No se pudieron cargar las clases', 'danger');
+                }
             }
         }
 
-        function renderClassRow(c) {
+        // ============================================
+        // Update Active Count
+        // ============================================
+        function updateActiveCount(count) {
+            const badge = document.getElementById('activeCountBadge');
+            const dot = document.getElementById('activeDot');
+            const countEl = document.getElementById('activeCount');
+
+            countEl.textContent = count;
+
+            if (count > 0) {
+                dot.className = 'dot';
+                badge.style.display = 'inline-flex';
+            } else {
+                dot.className = 'dot inactive';
+            }
+        }
+
+        // ============================================
+        // Render Class Card
+        // ============================================
+        function renderClassCard(c, index) {
             const statusBadge = getStatusBadge(c.status, c.error);
-            const progressBar = getProgressBar(c.progress, c.status);
-            const actions = getActions(c);
-            const created = new Date(c.created_at).toLocaleString('es-CL', {
-                day: '2-digit', month: '2-digit', year: 'numeric',
-                hour: '2-digit', minute: '2-digit'
-            });
-
+            const progressHtml = getProgressBar(c.progress, c.status);
+            const actionsHtml = getActions(c);
+            const relativeTime = timeAgo(c.created_at);
             const sesiones = c.url2 ? '2 sesiones' : '1 sesión';
+            const delay = Math.min(index * 0.07, 0.5);
 
-            return `<tr>
-                <td><strong>${escapeHtml(c.name)}</strong></td>
-                <td><span class="badge bg-secondary">${sesiones}</span></td>
-                <td>${statusBadge}</td>
-                <td style="min-width:150px">${progressBar}</td>
-                <td class="small text-muted">${created}</td>
-                <td>${actions}</td>
-            </tr>`;
+            return `
+                <div class="class-card" style="animation-delay: ${delay}s;">
+                    <div class="card-name">${escapeHtml(c.name)}</div>
+
+                    <div class="card-meta">
+                        <span class="badge-sessions">
+                            <i class="bi bi-collection me-1"></i>${sesiones}
+                        </span>
+                        ${statusBadge}
+                    </div>
+
+                    ${progressHtml}
+
+                    <div class="card-time">
+                        <i class="bi bi-clock"></i>
+                        ${relativeTime}
+                    </div>
+
+                    <div class="card-actions">
+                        ${actionsHtml}
+                    </div>
+                </div>
+            `;
         }
 
+        // ============================================
+        // Status Badge
+        // ============================================
         function getStatusBadge(status, error) {
-            if (error) return `<span class="badge bg-danger badge-status" title="${escapeHtml(error)}">Error</span>`;
+            if (error) {
+                return `<span class="badge-status-modern error" title="${escapeHtml(error)}">
+                    <i class="bi bi-exclamation-circle"></i> Error
+                </span>`;
+            }
+
             switch (status) {
-                case 'completed': return `<span class="badge bg-success badge-status">Completado</span>`;
-                case 'pending': return `<span class="badge bg-secondary badge-status">Pendiente</span>`;
+                case 'completed':
+                    return `<span class="badge-status-modern completed">
+                        <i class="bi bi-check-circle-fill"></i> Completado
+                    </span>`;
+                case 'pending':
+                    return `<span class="badge-status-modern pending">
+                        <i class="bi bi-hourglass"></i> Pendiente
+                    </span>`;
                 default:
-                    if (status?.startsWith('Descargando')) return `<span class="badge bg-info badge-status">${status}</span>`;
-                    if (status?.startsWith('Fusionando')) return `<span class="badge bg-warning text-dark badge-status">${status}</span>`;
-                    if (status?.startsWith('Concatenando')) return `<span class="badge bg-primary badge-status">${status}</span>`;
-                    return `<span class="badge bg-secondary badge-status">${status || 'Desconocido'}</span>`;
+                    if (status?.startsWith('Descargando')) {
+                        return `<span class="badge-status-modern downloading">
+                            <i class="bi bi-cloud-arrow-down"></i> ${status}
+                        </span>`;
+                    }
+                    if (status?.startsWith('Fusionando')) {
+                        return `<span class="badge-status-modern fusionando">
+                            <i class="bi bi-layers"></i> ${status}
+                        </span>`;
+                    }
+                    if (status?.startsWith('Concatenando')) {
+                        return `<span class="badge-status-modern concatenando">
+                            <i class="bi bi-link-45deg"></i> ${status}
+                        </span>`;
+                    }
+                    return `<span class="badge-status-modern pending">
+                        <i class="bi bi-question-circle"></i> ${escapeHtml(status || 'Desconocido')}
+                    </span>`;
             }
         }
 
+        // ============================================
+        // Progress Bar
+        // ============================================
         function getProgressBar(progress, status) {
-            const color = status === 'error' ? 'bg-danger' :
-                         status === 'completed' ? 'bg-success' :
-                         progress < 40 ? 'bg-info' :
-                         progress < 70 ? 'bg-warning' : 'bg-primary';
-            return `<div class="progress progress-thin">
-                <div class="progress-bar ${color}" role="progressbar"
-                     style="width:${progress}%"
-                     aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100">
+            let barClass = 'progress-bar-gradient';
+            if (status === 'completed') barClass += ' completed';
+            else if (status === 'error') barClass += ' error';
+            else barClass += ' static';
+
+            return `
+                <div>
+                    <div class="progress-modern">
+                        <div class="${barClass}" style="width:${progress}%"></div>
+                    </div>
+                    <div class="progress-label">
+                        <span>${status === 'completed' ? 'Completado' : status === 'error' ? 'Error' : 'Procesando...'}</span>
+                        <span>${progress}%</span>
+                    </div>
                 </div>
-            </div>
-            <small class="text-muted">${progress}%</small>`;
+            `;
         }
 
+        // ============================================
+        // Actions
+        // ============================================
         function getActions(c) {
             if (c.status === 'completed' && c.output_filename) {
-                return `<div class="btn-group btn-group-sm">
-                    <a href="/api/download/${c.id}" class="btn btn-success">
-                        <i class="bi bi-download"></i>
+                return `
+                    <a href="/api/download/${c.id}" class="btn-download-text">
+                        <i class="bi bi-download"></i> Descargar
                     </a>
-                    <button class="btn btn-outline-danger" onclick="deleteClass('${c.id}')">
-                        <i class="bi bi-trash"></i>
+                    <button class="btn-action btn-action-delete" onclick="confirmDelete('${c.id}')" title="Eliminar clase">
+                        <i class="bi bi-trash3"></i>
                     </button>
-                </div>`;
+                `;
             }
             if (c.status === 'error') {
-                return `<button class="btn btn-outline-danger btn-sm" onclick="deleteClass('${c.id}')">
-                    <i class="bi bi-trash"></i>
-                </button>`;
+                return `
+                    <button class="btn-action btn-action-delete" onclick="confirmDelete('${c.id}')" title="Eliminar clase">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                `;
             }
-            return `<div class="spinner-border spinner-border-sm text-secondary" role="status"></div>`;
+            return `
+                <div class="btn-action-spinner">
+                    <div class="spinner"></div>
+                </div>
+            `;
         }
 
-        async function deleteClass(id) {
-            if (!confirm('¿Eliminar esta clase?')) return;
+        // ============================================
+        // Submit New Class
+        // ============================================
+        document.getElementById('addClassForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const form = e.target;
+            const className = document.getElementById('className');
+            const url1 = document.getElementById('url1');
+
+            // Reset validation
+            className.classList.remove('is-valid', 'is-invalid');
+            url1.classList.remove('is-valid', 'is-invalid');
+
+            // Client-side validation
+            let valid = true;
+            if (!className.value || className.value.trim().length < 3) {
+                className.classList.add('is-invalid');
+                valid = false;
+            } else {
+                className.classList.add('is-valid');
+            }
+
+            if (!url1.value || !isValidUrl(url1.value)) {
+                url1.classList.add('is-invalid');
+                valid = false;
+            } else {
+                url1.classList.add('is-valid');
+            }
+
+            if (!valid) return;
+
+            const btn = document.getElementById('submitBtn');
+            const text = document.getElementById('submitText');
+            const spinner = document.getElementById('submitSpinner');
+            btn.disabled = true;
+            text.classList.add('d-none');
+            spinner.classList.remove('d-none');
+
             try {
-                await fetch(`/api/classes/${id}`, { method: 'DELETE' });
+                const resp = await fetch('/api/classes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: className.value.trim(),
+                        url1: url1.value.trim(),
+                        url2: document.getElementById('url2').value.trim() || null,
+                    }),
+                });
+
+                if (!resp.ok) {
+                    const err = await resp.json();
+                    showToast('Error', err.detail || 'Error al crear la clase', 'danger');
+                    return;
+                }
+
+                form.reset();
+                className.classList.remove('is-valid', 'is-invalid');
+                url1.classList.remove('is-valid', 'is-invalid');
+
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addClassModal'));
+                modal.hide();
+
                 await loadClasses();
+                showToast('Éxito', 'Clase agregada. El procesamiento comenzará en breve.', 'success');
             } catch (err) {
                 showToast('Error', err.message, 'danger');
+            } finally {
+                btn.disabled = false;
+                text.classList.remove('d-none');
+                spinner.classList.add('d-none');
+            }
+        });
+
+        // ============================================
+        // Real-time validation on blur
+        // ============================================
+        document.getElementById('className').addEventListener('blur', function() {
+            if (this.value && this.value.trim().length >= 3) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else if (this.value) {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+            }
+        });
+
+        document.getElementById('url1').addEventListener('blur', function() {
+            if (this.value && isValidUrl(this.value)) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else if (this.value) {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+            }
+        });
+
+        function isValidUrl(string) {
+            try {
+                const url = new URL(string);
+                return url.protocol === 'http:' || url.protocol === 'https:';
+            } catch {
+                return false;
             }
         }
 
+        // ============================================
+        // Delete Class (with modern confirmation)
+        // ============================================
+        function confirmDelete(id) {
+            deleteTargetId = id;
+            const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+            modal.show();
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+            if (!deleteTargetId) return;
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal'));
+            modal.hide();
+
+            try {
+                await fetch(`/api/classes/${deleteTargetId}`, { method: 'DELETE' });
+                await loadClasses();
+                showToast('Eliminada', 'La clase fue eliminada correctamente', 'success');
+            } catch (err) {
+                showToast('Error', err.message, 'danger');
+            } finally {
+                deleteTargetId = null;
+            }
+        });
+
+        // Reset delete target when modal is dismissed
+        document.getElementById('confirmDeleteModal').addEventListener('hidden.bs.modal', () => {
+            deleteTargetId = null;
+        });
+
+        // ============================================
+        // Polling
+        // ============================================
         function startPolling() {
             if (pollingInterval) return;
             pollingInterval = setInterval(loadClasses, 3000);
@@ -267,30 +1510,80 @@
             }
         }
 
+        // ============================================
+        // Toast Notifications (modern)
+        // ============================================
         function showToast(title, message, type = 'info') {
-            const container = document.querySelector('.toast-container');
-            const icons = { success: 'bi-check-circle-fill', danger: 'bi-x-circle-fill', info: 'bi-info-circle-fill', warning: 'bi-exclamation-triangle-fill' };
+            const container = document.getElementById('toastContainer');
+
+            const icons = {
+                success: 'bi-check-circle-fill',
+                danger: 'bi-x-circle-fill',
+                info: 'bi-info-circle-fill',
+                warning: 'bi-exclamation-triangle-fill'
+            };
+
             const toast = document.createElement('div');
-            toast.className = `toast align-items-center text-bg-${type} border-0`;
-            toast.role = 'alert';
-            toast.innerHTML = `<div class="d-flex">
-                <div class="toast-body"><i class="bi ${icons[type] || icons.info} me-2"></i><strong>${title}</strong><br><small>${message}</small></div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>`;
+            toast.className = `toast-modern`;
+            toast.innerHTML = `
+                <div class="toast-icon ${type}">
+                    <i class="bi ${icons[type] || icons.info}"></i>
+                </div>
+                <div class="toast-body">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="dismissToast(this.parentElement)">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+                <div class="toast-timer ${type}"></div>
+            `;
+
             container.appendChild(toast);
-            const bsToast = new bootstrap.Toast(toast, { autohide: true, delay: 5000 });
-            bsToast.show();
-            toast.addEventListener('hidden.bs.toast', () => toast.remove());
+
+            // Auto-dismiss after 4.5s
+            setTimeout(() => {
+                dismissToast(toast);
+            }, 4500);
         }
 
+        function dismissToast(toast) {
+            if (!toast || toast.classList.contains('toast-hiding')) return;
+            toast.classList.add('toast-hiding');
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.parentElement.removeChild(toast);
+                }
+            }, 300);
+        }
+
+        // ============================================
+        // Escape HTML
+        // ============================================
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
 
+        // ============================================
+        // Init
+        // ============================================
+        // Backdrop for modals
+        document.querySelectorAll('.modal-glass').forEach(m => {
+            m.addEventListener('show.bs.modal', function() {
+                // Ensure proper backdrop
+            });
+        });
+
+        // Initial load + background refresh every 10s
         loadClasses();
-        setInterval(loadClasses, 10000);
+        setInterval(() => {
+            // Only poll in background if no active polling is running
+            if (!pollingInterval) {
+                loadClasses();
+            }
+        }, 10000);
     </script>
 </body>
 </html>
